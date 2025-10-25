@@ -1,0 +1,210 @@
+﻿@{
+    ViewData["Title"] = "Sales & Stock Report";
+
+    var invoices = ViewBag.Invoices as List<STOCKER.Models.SalesInvoice>;
+    var stockAdds = (ViewBag.StockAdds as List<STOCKER.Models.InventoryTransaction>)?.OrderByDescending(x => x.Timestamp).ToList();
+    var stockSells = (ViewBag.StockSells as List<STOCKER.Models.InventoryTransaction>)?.OrderByDescending(x => x.Timestamp).ToList();
+    var stockAddSummary = ViewBag.StockAddSummary as IEnumerable<dynamic>;
+    var stockSellSummary = ViewBag.StockSellSummary as IEnumerable<dynamic>;
+
+    string status = ViewBag.Status ?? "All";
+    string mode = ViewBag.Mode ?? "custom";
+    string fromDate = ViewBag.FromDate ?? DateTime.Today.ToString("yyyy-MM-dd");
+    string toDate = ViewBag.ToDate ?? DateTime.Today.ToString("yyyy-MM-dd");
+    decimal totalSales = ViewBag.TotalSales;
+    decimal totalPaid = ViewBag.TotalPaid;
+    decimal totalUnpaid = ViewBag.TotalUnpaid;
+}
+
+<h2>Sales & Stock Report</h2>
+<hr />
+
+<form method="get" asp-action="SalesStockReport">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label><strong>Report Mode</strong></label>
+            <div class="btn-group d-block">
+                <a class="btn btn-outline-primary @(mode == "custom" ? "active" : "")"
+                   asp-action="SalesStockReport"
+                   asp-route-mode="custom"
+                   asp-route-status="@status"
+                   asp-route-fromDate="@fromDate"
+                   asp-route-toDate="@toDate">Custom</a>
+
+                <a class="btn btn-outline-primary @(mode == "daily" ? "active" : "")"
+                   asp-action="SalesStockReport"
+                   asp-route-mode="daily"
+                   asp-route-status="@status">Today</a>
+
+
+                <a class="btn btn-outline-primary @(mode == "monthly" ? "active" : "")"
+                   asp-action="SalesStockReport"
+                   asp-route-mode="monthly"
+                   asp-route-status="@status">Monthly</a>
+
+                <a class="btn btn-outline-primary @(mode == "yearly" ? "active" : "")"
+                   asp-action="SalesStockReport"
+                   asp-route-mode="yearly"
+                   asp-route-status="@status">Yearly</a>
+            </div>
+        </div>
+    </div>
+
+    @if (mode == "custom")
+    {
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>From</label>
+                <input type="date" name="fromDate" class="form-control" value="@fromDate" />
+            </div>
+            <div class="col-md-3">
+                <label>To</label>
+                <input type="date" name="toDate" class="form-control" value="@toDate" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Apply</button>
+            </div>
+        </div>
+    }
+</form>
+
+<hr />
+
+<h4>Summary</h4>
+<ul>
+    <li><strong>Total Sales:</strong> ₹@totalSales.ToString("0.00")</li>
+    <li><strong>Total Paid:</strong> ₹@totalPaid.ToString("0.00")</li>
+    <li><strong>Total Unpaid:</strong> ₹@totalUnpaid.ToString("0.00")</li>
+</ul>
+
+<hr />
+
+<h4>Stock Added History</h4>
+@if (stockAdds != null && stockAdds.Any())
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity Added</th>
+                <th>Buying Price (at time)</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var add in stockAdds)
+            {
+                <tr>
+                    <td>@add.Product?.Name</td>
+                    <td>@add.QuantityAdded</td>
+                    <td>₹@add.BuyingPrice.ToString("0.00")</td>
+                    <td>@add.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No stock additions recorded.</p>
+}
+
+<hr />
+
+<h4>Stock Sold History</h4>
+@if (stockSells != null && stockSells.Any())
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity Sold</th>
+                <th>Selling Price (at time)</th>
+                <th>Date</th>
+                <th>Invoice #</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sell in stockSells)
+            {
+                <tr>
+                    <td>@sell.Product?.Name</td>
+                    <td>@sell.QuantitySold</td>
+                    <td>₹@sell.SellingPrice.ToString("0.00")</td>
+                    <td>@sell.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @(sell.SalesInvoice != null ? sell.SalesInvoice.InvoiceId.ToString() : "—")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No stock sold during this period.</p>
+}
+
+<hr />
+<h4>Summary Totals (Grouped by Product)</h4>
+<div class="row">
+    <div class="col-md-6">
+        <h5>Total Stock Added</h5>
+        @if (stockAddSummary != null && stockAddSummary.Any())
+        {
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Total Quantity Added</th>
+                        <th>Total Cost (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in stockAddSummary)
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@item.TotalQuantity</td>
+                            <td>₹@item.TotalCost.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No stock added during this period.</p>
+        }
+    </div>
+
+    <div class="col-md-6">
+        <h5>Total Stock Sold</h5>
+        @if (stockSellSummary != null && stockSellSummary.Any())
+        {
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Total Quantity Sold</th>
+                        <th>Total Revenue (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in stockSellSummary)
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@item.TotalQuantity</td>
+                            <td>₹@item.TotalRevenue.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No stock sold during this period.</p>
+        }
+    </div>
+</div>

@@ -1,0 +1,115 @@
+﻿@using System.Globalization
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var totalStockValue = ViewBag.TotalStockValue as decimal? ?? 0m;
+    var todaySales = ViewBag.TodaySales as decimal? ?? 0m;
+    var monthSales = ViewBag.MonthSales as decimal? ?? 0m;
+    var totalCustomers = ViewBag.TotalCustomers as int? ?? 0;
+    var totalProfit = ViewBag.TotalProfit as decimal? ?? 0m;
+    var totalUnpaid = ViewBag.TotalUnpaid as decimal? ?? 0m;
+
+    var dailySales = ViewBag.DailySales as IEnumerable<dynamic> ?? new List<dynamic>();
+    var monthlySales = ViewBag.MonthlySales as IEnumerable<dynamic> ?? new List<dynamic>();
+}
+
+<h2>📊 Dashboard Overview</h2>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Stock Value</h5>
+                <p class="card-text display-6">₹@totalStockValue.ToString("N2", CultureInfo.InvariantCulture)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Today's Sales</h5>
+                <p class="card-text display-6">₹@todaySales.ToString("N2", CultureInfo.InvariantCulture)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Monthly Sales</h5>
+                <p class="card-text display-6">₹@monthSales.ToString("N2", CultureInfo.InvariantCulture)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-dark">
+            <div class="card-body">
+                <h5 class="card-title">Total Customers</h5>
+                <p class="card-text display-6">@totalCustomers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Total Profit</h5>
+                <p class="card-text display-6">₹@totalProfit.ToString("N2", CultureInfo.InvariantCulture)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Unpaid Amount</h5>
+                <p class="card-text display-6">₹@totalUnpaid.ToString("N2", CultureInfo.InvariantCulture)</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr class="my-5" />
+
+<h4>📅 Sales Chart (Last 7 Days)</h4>
+<canvas id="dailySalesChart" height="100"></canvas>
+
+<h4 class="mt-5">🗓️ Monthly Sales Chart (This Year)</h4>
+<canvas id="monthlySalesChart" height="100"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const dailyCtx = document.getElementById('dailySalesChart').getContext('2d');
+        new Chart(dailyCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(dailySales.Select(x => x.DateLabel))),
+                datasets: [{
+                    label: 'Sales (₹)',
+                    data: @Html.Raw(Json.Serialize(dailySales.Select(x => x.Amount))),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        const monthlyCtx = document.getElementById('monthlySalesChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(monthlySales.Select(x => x.MonthLabel))),
+                datasets: [{
+                    label: 'Sales (₹)',
+                    data: @Html.Raw(Json.Serialize(monthlySales.Select(x => x.Amount))),
+                    fill: true,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+}

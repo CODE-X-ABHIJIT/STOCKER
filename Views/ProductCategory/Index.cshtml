@@ -1,0 +1,30 @@
+﻿@model IEnumerable<STOCKER.Models.ProductCategory>
+
+@{
+    ViewData["Title"] = "Product Categories";
+}
+
+<h2>Product Categories</h2>
+<a asp-controller="Products" asp-action="Index" class="btn btn-primary mb-3"">Products</a>
+
+<a asp-action="Create" class="btn btn-primary mb-3">Add New Category</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>
+                    <a asp-action="Delete" asp-route-id="@category.CategoryId" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

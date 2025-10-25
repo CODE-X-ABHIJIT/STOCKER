@@ -1,0 +1,28 @@
+﻿@model IEnumerable<STOCKER.Models.Inventory>
+
+<h2>Low Stock Report</h2>
+
+@if (!Model.Any())
+{
+    <p>All products are sufficiently stocked.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity in Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Products.Name</td>
+                    <td>@item.QuantityInStock</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

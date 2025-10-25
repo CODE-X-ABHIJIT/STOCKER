@@ -1,0 +1,83 @@
+﻿@using System.Globalization
+@model STOCKER.Models.SalesInvoice
+
+@{
+    ViewData["Title"] = "Invoice Summary";
+    var total = Model.InvoiceDetails.Sum(x => x.Quantity * x.UnitPrice);
+}
+<style>
+    @@media print {
+        button, .btn, .navbar {
+            display: none !important;
+        }
+    }
+</style>
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-6">
+            <h2 class="fw-bold">INVOICE</h2>
+            <p><strong>Invoice #:</strong> @Model.InvoiceId</p>
+            <p><strong>Date:</strong> @Model.Date.ToString("dd MMM yyyy HH:mm")</p>
+        </div>
+        <div class="col-6 text-end">
+            <h5>Status</h5>
+            <span class="badge bg-@(Model.PaymentStatus == "Paid" ? "success" : "danger")">
+                @Model.PaymentStatus
+            </span>
+            @if (Model.PaymentStatus == "Paid")
+            {
+                <div><small><strong>Paid On:</strong> @Model.PaidDate?.ToString("dd MMM yyyy HH:mm")</small></div>
+            }
+        </div>
+    </div>
+
+    @if (Model.PaymentStatus == "Unpaid")
+    {
+        <form asp-action="MarkAsPaid" method="post" onsubmit="return confirm('Are you sure you want to mark this invoice as Paid?');">
+            <input type="hidden" name="id" value="@Model.InvoiceId" />
+            <button type="submit" class="btn btn-success mb-4">Mark as Paid</button>
+        </form>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header fw-bold">Customer Details</div>
+        <div class="card-body">
+            <p><strong>Name:</strong> @Model.CustomerName</p>
+            <p><strong>Mobile:</strong> @Model.CustomerMobile</p>
+            <p><strong>Address:</strong> @Model.CustomerAddress</p>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.InvoiceDetails)
+            {
+                <tr>
+                    <td>@item.Products.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice.ToString("C", CultureInfo.GetCultureInfo("en-IN"))</td>
+                    <td>@((item.UnitPrice * item.Quantity).ToString("C", CultureInfo.GetCultureInfo("en-IN")))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-end mt-3">
+        <h4>Grand Total: @total.ToString("C", CultureInfo.GetCultureInfo("en-IN")) <small class="text-muted">(incl. GST)</small></h4>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a class="btn btn-secondary" asp-action="Index">Back to Billing</a>
+        <button class="btn btn-primary" onclick="window.print()">Print Invoice</button>
+    </div>
+</div>
+
+

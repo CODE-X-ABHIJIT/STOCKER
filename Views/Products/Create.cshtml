@@ -1,0 +1,61 @@
+﻿@model STOCKER.Models.Products
+
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<h2>Create Product</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <!-- Product Name -->
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <!-- Category Dropdown -->
+            <div class="form-group mb-3">
+                <label asp-for="ProductCategoryId" class="form-label"></label>
+                <select asp-for="ProductCategoryId" class="form-control" asp-items="ViewBag.Categories">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="ProductCategoryId" class="text-danger"></span>
+            </div>
+
+            <!-- Selling Price -->
+            <div class="form-group mb-3">
+                <label asp-for="Price" class="form-label"></label>
+                <input asp-for="Price" class="form-control" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <!-- Buying Price -->
+            <div class="form-group mb-3">
+                <label asp-for="BuyingPrice" class="form-label"></label>
+                <input asp-for="BuyingPrice" class="form-control" />
+                <span asp-validation-for="BuyingPrice" class="text-danger"></span>
+            </div>
+
+            <!-- Initial Stock -->
+            <div class="form-group mb-3">
+                <label for="QuantityInStock" class="form-label">Initial Stock</label>
+                <input type="number" name="QuantityInStock" class="form-control" min="0" required />
+                <span class="text-danger" asp-validation-for="Inventory.QuantityInStock"></span>
+            </div>
+
+            <!-- Submit Buttons -->
+            <button type="submit" class="btn btn-success">Create</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

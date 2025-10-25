@@ -1,0 +1,63 @@
+﻿@using System.Globalization
+@model List<CartItem>
+@{
+    ViewData["Title"] = "Review Cart";
+    var total = Model.Sum(x => x.UnitPrice * x.Quantity);
+}
+
+<h2>Review Selected Items</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Unit Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.UnitPrice.ToString("C", CultureInfo.GetCultureInfo("en-IN"))</td>
+                <td>@item.Quantity</td>
+                <td>@((item.UnitPrice * item.Quantity).ToString("C", CultureInfo.GetCultureInfo("en-IN")))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Total: @total.ToString("C", CultureInfo.GetCultureInfo("en-IN"))</h4>
+
+<hr />
+<h3>Customer Details</h3>
+
+<form method="post" asp-controller="Billing" asp-action="Confirm">
+    <div class="form-group">
+        <label for="CustomerName">Customer Name</label>
+        <input type="text" name="CustomerName" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Mobile">Mobile Number</label>
+        <input type="text" name="Mobile" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Address">Address</label>
+        <textarea name="Address" class="form-control" rows="3" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="PaymentStatus">Payment Status</label>
+        <select name="PaymentStatus" class="form-control" required>
+            <option value="">-- Select Status --</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Confirm and Generate Invoice</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>

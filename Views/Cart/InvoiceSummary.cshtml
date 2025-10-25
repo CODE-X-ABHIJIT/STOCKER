@@ -1,0 +1,33 @@
+﻿@model STOCKER.Models.SalesInvoice
+
+<h2>Invoice Summary</h2>
+
+<p><strong>Invoice ID:</strong> @Model.InvoiceId</p>
+<p><strong>Date:</strong> @Model.Date.ToShortDateString()</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var detail in Model.InvoiceDetails)
+        {
+            <tr>
+                <td>@detail.Products.Name</td>
+                <td>@detail.Quantity</td>
+                <td>@detail.UnitPrice.ToString("C")</td>
+                <td>@(detail.Quantity* detail.UnitPrice).ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="DownloadInvoice" asp-route-id="@Model.InvoiceId" class="btn btn-success">
+    Download Invoice PDF
+</a>
+
+<a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to Home</a>

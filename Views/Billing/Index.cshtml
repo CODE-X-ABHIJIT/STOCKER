@@ -1,0 +1,99 @@
+﻿@using System.Globalization
+@model List<STOCKER.Models.Products>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
+@{
+    var searchQuery = Context.Request.Query["q"].ToString();
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+    ViewData["Title"] = "Billing";
+}
+
+<h2>Billing - Select Products</h2>
+
+<!-- Search Form -->
+<form method="get" class="mb-3">
+    <input type="text" name="q" class="form-control" placeholder="Search products..." value="@searchQuery" />
+</form>
+
+<!-- Product Table -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>In Stock</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var maxQty = item.Inventory?.QuantityInStock ?? 0;
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Price.ToString("C", CultureInfo.GetCultureInfo("en-IN"))</td>
+                <td>@maxQty</td>
+                <td>
+                    <input type="number"
+                           name="qty"
+                           data-product-id="@item.ProductId"
+                           class="form-control qty-input"
+                           min="0"
+                           max="@maxQty"
+                           value="1"
+                           style="width:80px;" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Proceed to Review -->
+<button type="button" class="btn btn-success" onclick="submitCart()">Proceed to Review</button>
+
+<!-- Antiforgery Token -->
+<input type="hidden" id="requestVerificationToken" value="@tokens.RequestToken" />
+
+@section Scripts {
+    <script>
+        function submitCart() {
+            const inputs = document.querySelectorAll('.qty-input');
+            const cartItems = [];
+
+            inputs.forEach(input => {
+                const qty = parseInt(input.value);
+                const productId = parseInt(input.getAttribute('data-product-id'));
+                if (!isNaN(qty) && qty > 0) {
+                    cartItems.push({ productId: productId, qty: qty });
+                }
+            });
+
+            if (cartItems.length === 0) {
+                alert("Please enter quantities before proceeding.");
+                return;
+            }
+
+            // Send all at once
+            fetch('/Billing/AddMultipleToBillingCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.getElementById('requestVerificationToken').value
+                },
+                body: JSON.stringify(cartItems)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/Billing/Review';
+                } else {
+                    alert("Failed to add items to cart.");
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("Error adding items.");
+            });
+        }
+    </script>
+}
